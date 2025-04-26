@@ -16,7 +16,7 @@ To run this app, you need:
 - Python **3.11** or newer
 - `pygame`
 - `sounddevice`
-- `vosk`
+- `vosk (Make sure to downlopad english-us small model from their site: https://alphacephei.com/vosk/models`
 - `numpy`
 
 You can install them easily with:
