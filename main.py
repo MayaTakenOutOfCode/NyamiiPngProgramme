@@ -14,7 +14,7 @@ import os # Added for potential file operations later
 # --- CONSTANTS ---
 WINDOW_HEIGHT = 800
 WINDOW_WIDTH = 800
-THRESHOLD = 0.2 # Mic volume threshold for talking state
+THRESHOLD = 12 # Mic volume threshold for talking state
 BOUNCE_SPEED = 5
 BOUNCE_HEIGHT = 10
 BREATH_SPEED = 1
@@ -114,6 +114,7 @@ try:
 except Exception as e:
     print(f"Error loading Vosk model: {e}")
     vosk_model = None # Ensure it's None if loading fails
+
 
 # --- AUDIO & KEYWORD FUNCTIONS ---
 def audio_callback(indata, frames, time_info, status):
@@ -326,6 +327,7 @@ popup_buttons = {
     "Add Prop": pygame.Rect(popup_button_x, popup_start_y + popup_button_spacing, popup_button_width, popup_button_height),
     "Add Background": pygame.Rect(popup_button_x, popup_start_y + 2 * popup_button_spacing, popup_button_width, popup_button_height),
     "Change Scene": pygame.Rect(popup_button_x, popup_start_y + 3 * popup_button_spacing, popup_button_width, popup_button_height),
+
     "Close Menu": pygame.Rect(popup_button_x, POPUP_Y + POPUP_HEIGHT - popup_button_height - 30, popup_button_width, popup_button_height) # Position Close at bottom
 }
 
