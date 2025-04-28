@@ -46,28 +46,28 @@ def make_cool():
 def make_human():
     change_model("human")
     print("Making model human!")
-start_chat_listener("YOUR_VIDEO_ID") 
-check_keywords()
-if check_keywords().event_queue != []:
-    for event in check_keywords().event_queue:
-        author, keyword, action = event
-        print(f"Keyword '{keyword}' detected from {author}: {action}")
-        if keyword == "bald":
-            make_bald()
-        elif keyword == "neko":
-            make_neko()
-        elif keyword == "evil":
-            make_evil()
-        elif keyword == "googly":
-            make_googly()
-        # elif keyword == "bonk":
-        #     make_bonk()
-        # elif keyword == "cheese":
-        #     throw_cheese()
-        # elif keyword == "cool":
-        #     make_cool()
-        elif keyword == "human":
-            make_human()
+# start_chat_listener("YOUR_VIDEO_ID") 
+# check_keywords()
+# if check_keywords().event_queue != []:
+#     for event in check_keywords().event_queue:
+#         author, keyword, action = event
+#         print(f"Keyword '{keyword}' detected from {author}: {action}")
+#         if keyword == "bald":
+#             make_bald()
+#         elif keyword == "neko":
+#             make_neko()
+#         elif keyword == "evil":
+#             make_evil()
+#         elif keyword == "googly":
+#             make_googly()
+#         # elif keyword == "bonk":
+#         #     make_bonk()
+#         # elif keyword == "cheese":
+#         #     throw_cheese()
+#         # elif keyword == "cool":
+#         #     make_cool()
+#         elif keyword == "human":
+#             make_human()
 # --- CONSTANTS ---
 WINDOW_HEIGHT = 800
 WINDOW_WIDTH = 800
@@ -76,7 +76,7 @@ BOUNCE_SPEED = 5
 BOUNCE_HEIGHT = 10
 BREATH_SPEED = 1
 BREATH_HEIGHT = 5
-IMAGE_SCALE = 0.4
+IMAGE_SCALE = 0.8
 SPLASH_DURATION = 2000 # Milliseconds (2 seconds)
 
 
