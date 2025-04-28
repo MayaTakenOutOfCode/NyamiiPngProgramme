@@ -6,11 +6,42 @@ import threading
 import time
 import random
 import queue
+from yt_connect import start_chat_listener, check_keywords 
 import json
 from vosk import Model, KaldiRecognizer
 import sys
-import os # Added for potential file operations later
+import os 
 
+# --- MODEL CHANGER PATHS ---
+
+pathToModelDir = os.path.join(os.path.dirname(__file__), "nyamii/models")
+pathTobaldModel = os.path.join(pathToModelDir, "bald")
+pathToBonkModel = os.path.join(pathToModelDir, "bonk")
+pathToCoolModel = os.path.join(pathToModelDir, "cool")
+pathToEvilModel = os.path.join(pathToModelDir, "evil")
+pathToGooglyModel = os.path.join(pathToModelDir, "googly")
+pathToHumanModel = os.path.join(pathToModelDir, "human")
+pathToNekoModel = os.path.join(pathToModelDir, "neko")
+pathToNyamiiModel = os.path.join(pathToModelDir, "nyamii")
+
+#Functions for keywords
+def make_neko():
+    print("Making model a Neko!")
+def make_bald():
+    print("Making model into bald model!")
+def make_evil():
+    print("Making model a succubus!")
+def make_googly():
+    print("Giving model googly eyes!")
+def make_bonk():
+    print("Making model a bonk!")
+def throw_cheese():
+    print("Throwing cheese at the tuber!")
+def make_cool():
+    print("Giving model cool sunglasses!")
+def make_human():
+    print("Making model human!")
+start_chat_listener("YOUR_VIDEO_ID") 
 # --- CONSTANTS ---
 WINDOW_HEIGHT = 800
 WINDOW_WIDTH = 800
@@ -21,6 +52,8 @@ BREATH_SPEED = 1
 BREATH_HEIGHT = 5
 IMAGE_SCALE = 0.4
 SPLASH_DURATION = 2000 # Milliseconds (2 seconds)
+
+
 
 # Game States
 SPLASH = 0
@@ -67,37 +100,109 @@ except Exception as e:
     font_default_S = pygame.font.Font(None, 40)
     font_default_XS = pygame.font.Font(None, 30)
 
+# --- Model loading function ---
+
+def load_model(model_name):
+    global current_model_images, current_model_name, heart_img, sparkle_img, cheese_img
+
+    # Define paths for model and assets
+    model_folder = os.path.join(pathToModelDir, model_name)
+    assets_folder = os.path.join(base_path, "assets")
+
+    try:
+        # Load the model images (idle and talking)
+        idle_path = os.path.join(model_folder, f"{model_name}.png")
+        talking_path = os.path.join(model_folder, f"{model_name}Talking.png")
+
+        current_idle_img = pygame.image.load(idle_path).convert_alpha()
+        current_talking_img = pygame.image.load(talking_path).convert_alpha()
+
+        # Apply scaling to the model images
+        current_idle_img = pygame.transform.scale(
+            current_idle_img, 
+            (int(current_idle_img.get_width() * IMAGE_SCALE), int(current_idle_img.get_height() * IMAGE_SCALE))
+        )
+        current_talking_img = pygame.transform.scale(
+            current_talking_img, 
+            (int(current_talking_img.get_width() * IMAGE_SCALE), int(current_talking_img.get_height() * IMAGE_SCALE))
+        )
+
+        # Update the global dictionary with the loaded and scaled images
+        current_model_images = {'idle': current_idle_img, 'talking': current_talking_img}
+
+        # Set the current model name
+        current_model_name = model_name
+        print(f"Loaded model: {model_name}")
+
+        # Load and scale the other assets
+        heart_img = pygame.image.load(os.path.join(assets_folder, "heart.png")).convert_alpha()
+        heart_img = pygame.transform.scale(heart_img, (int(heart_img.get_width() * 0.2), int(heart_img.get_height() * 0.2)))
+
+        sparkle_img = pygame.image.load(os.path.join(assets_folder, "sparkle.png")).convert_alpha()
+        sparkle_img = pygame.transform.scale(sparkle_img, (32, 32))
+
+        #cheese_img = pygame.image.load(os.path.join(assets_folder, "cheese.png")).convert_alpha()
+
+    except pygame.error as e:
+        print(f"Error loading model images: {e}")
+        print(f"Please ensure image files exist in '{model_folder}/' and '{assets_folder}/'.")
+        pygame.quit()
+        sys.exit()
+
+
+
 # --- LOAD ASSETS ---
 # Define base path (useful if assets are in subdirs)
 base_path = os.path.dirname(__file__) # Directory where the script is running
 nyamii_path = os.path.join(base_path, "nyamii")
 assets_path = os.path.join(base_path, "assets")
 
-try:
-    idle_img = pygame.image.load(os.path.join(nyamii_path, "idle.png")).convert_alpha()
-    talking_img = pygame.image.load(os.path.join(nyamii_path, "talking.png")).convert_alpha()
-    heart_img = pygame.image.load(os.path.join(assets_path, "heart.png")).convert_alpha()
-    sparkle_img = pygame.image.load(os.path.join(assets_path, "sparkle.png")).convert_alpha()
-except pygame.error as e:
-    print(f"Error loading image: {e}")
-    print(f"Please ensure image files exist in '{nyamii_path}/' and '{assets_path}/'.")
-    pygame.quit()
-    sys.exit()
+# try:
+#     idle_img = pygame.image.load(os.path.join(nyamii_path, "idle.png")).convert_alpha()
+#     talking_img = pygame.image.load(os.path.join(nyamii_path, "talking.png")).convert_alpha()
+#     heart_img = pygame.image.load(os.path.join(assets_path, "heart.png")).convert_alpha()
+#     sparkle_img = pygame.image.load(os.path.join(assets_path, "sparkle.png")).convert_alpha()
+#     cheese_img = pygame.image.load(os.path.join(assets_path, "cheese.png")).convert_alpha()
+# except pygame.error as e:
+#     print(f"Error loading image: {e}")
+#     print(f"Please ensure image files exist in '{nyamii_path}/' and '{assets_path}/'.")
+#     pygame.quit()
+#     sys.exit()
 
-# --- SCALE ASSETS ---
-idle_img = pygame.transform.scale(idle_img, (int(idle_img.get_width() * IMAGE_SCALE), int(idle_img.get_height() * IMAGE_SCALE)))
-talking_img = pygame.transform.scale(talking_img, (int(talking_img.get_width() * IMAGE_SCALE), int(talking_img.get_height() * IMAGE_SCALE)))
-heart_img = pygame.transform.scale(heart_img, (int(heart_img.get_width() * 0.2), int(heart_img.get_height() * 0.2)))
-sparkle_img = pygame.transform.scale(sparkle_img, (32, 32))
+load_model("nyamii")
+# # --- SCALE ASSETS ---
+# idle_img = pygame.transform.scale(idle_img, (int(idle_img.get_width() * IMAGE_SCALE), int(idle_img.get_height() * IMAGE_SCALE)))
+# talking_img = pygame.transform.scale(talking_img, (int(talking_img.get_width() * IMAGE_SCALE), int(talking_img.get_height() * IMAGE_SCALE)))
+# heart_img = pygame.transform.scale(heart_img, (int(heart_img.get_width() * 0.2), int(heart_img.get_height() * 0.2)))
+# sparkle_img = pygame.transform.scale(sparkle_img, (32, 32))
+
+# --- update model images ---
+def update_current_model_images():
+    global current_model_images
+    current_model_images = {
+        'idle': current_idle_img,
+        'talking': current_talking_img
+    }
+
+
 
 # --- GAME VARIABLES ---
-current_model_images = {'idle': idle_img, 'talking': talking_img} # Prepare for model switching
-current_img = current_model_images['idle'] # Use the dictionary
+current_model_images = {'idle': None, 'talking': None}  # Set initial values to None
+current_img = None  # Set initial value to None
 is_talking = False
 particles = []
 glow_timer = 0
 GLOW_DURATION = 180
-is_options_popup_open = False # Flag for the options popup
+global is_options_popup_open # Flag for the options popup
+is_options_popup_open = False
+# You would call load_model here to set the initial model and images
+def initialize_model(model_name):
+    load_model(model_name)  # This will load the model and update current_model_images
+    global current_img
+    current_img = current_model_images['idle']  # Set the initial image to the idle state
+
+initialize_model('nyamii')
+
 
 # Global audio queue shared between mic input and keyword listener
 q = queue.Queue()
@@ -189,13 +294,6 @@ def listen_for_keywords():
                     if any(word in text for word in keywords):
                         print("Keyword detected! Triggering magic...")
                         trigger_magic()
-            # else: # Optional: Handle partial results for faster feedback (can be noisy)
-            #     partial_result = json.loads(recognizer.PartialResult())
-            #     partial_text = partial_result.get("partial", "").lower()
-            #     if partial_text and any(word in partial_text for word in keywords):
-            #          print(f"Partial keyword detected: {partial_text}")
-            #          # Maybe trigger a smaller effect for partial? trigger_magic('partial')
-
         except queue.Empty:
             continue # Loop normally if no audio data after timeout
         except Exception as e:
@@ -238,14 +336,14 @@ def draw_game_screen(elapsed_time):
 
     # Character bounce based on talking state
     if is_talking:
-        current_img = current_model_images['talking']
+        current_img = current_model_images['talking']  # Use loaded 'talking' image
         bounce_offset = math.sin(elapsed_time * BOUNCE_SPEED) * BOUNCE_HEIGHT
     else:
-        current_img = current_model_images['idle']
+        current_img = current_model_images['idle']  # Use loaded 'idle' image
         bounce_offset = math.sin(elapsed_time * BREATH_SPEED) * BREATH_HEIGHT
 
     char_x = WINDOW_WIDTH // 2 - current_img.get_width() // 2
-    char_y = WINDOW_HEIGHT // 2 - current_img.get_height() // 2 + int(bounce_offset) # Ensure int
+    char_y = WINDOW_HEIGHT // 2 - current_img.get_height() // 2 + int(bounce_offset)  # Ensure int
 
     # Draw pink glow effect if active
     if glow_timer > 0:
@@ -259,7 +357,7 @@ def draw_game_screen(elapsed_time):
         # Calculate alpha for fade-out effect
         max_alpha = 150
         current_alpha = int(max_alpha * (glow_timer / GLOW_DURATION))
-        glow_color = (PINK[0], PINK[1], PINK[2], max(0, min(current_alpha, 255))) # Clamp alpha
+        glow_color = (PINK[0], PINK[1], PINK[2], max(0, min(current_alpha, 255)))  # Clamp alpha
 
         pygame.draw.ellipse(glow_surface, glow_color, glow_surface.get_rect())
 
@@ -278,7 +376,7 @@ def draw_game_screen(elapsed_time):
 
         # Simple scaling and drawing
         scaled_img = pygame.transform.scale(particle["img"], (int(particle["img"].get_width() * particle["scale"]), int(particle["img"].get_height() * particle["scale"])))
-        window.blit(scaled_img, (int(particle["x"]), int(particle["y"]))) # Ensure int coords
+        window.blit(scaled_img, (int(particle["x"]), int(particle["y"])))  # Ensure int coords
 
         # Remove particle if timer runs out or it goes off-screen (bottom)
         if particle["timer"] <= 0 or particle["y"] > WINDOW_HEIGHT:
@@ -331,6 +429,70 @@ popup_buttons = {
     "Close Menu": pygame.Rect(popup_button_x, POPUP_Y + POPUP_HEIGHT - popup_button_height - 30, popup_button_width, popup_button_height) # Position Close at bottom
 }
 
+import pygame
+import sys
+
+def change_model():
+    global current_img, current_model_images, current_model_name, is_options_popup_open
+
+    font = pygame.font.Font(None, 36)  # Use a basic font
+    input_box = pygame.Rect(WINDOW_WIDTH // 2 - 150, WINDOW_HEIGHT // 2 - 20, 300, 40)  # Define the input box
+    color_inactive = pygame.Color('lightskyblue3')  # Inactive color
+    color_active = pygame.Color('dodgerblue2')  # Active color
+    color = color_inactive
+    active = False
+    text = ''  # Initial text in the input box
+    clock = pygame.time.Clock()
+    running_input = True
+
+    while running_input:
+        window.fill(GREEN_SCREEN)  # Clear the window
+        
+        # Event handling for input box
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                # Toggle active status of the input box when clicked
+                if input_box.collidepoint(event.pos):
+                    active = True
+                else:
+                    active = False
+                color = color_active if active else color_inactive
+            if event.type == pygame.KEYDOWN:
+                if active:
+                    if event.key == pygame.K_RETURN:
+                        # When Enter is pressed, attempt to load the model
+                        if text:  # Check if there's text in the box
+                            load_model(text)  # Load the model based on the text input
+                            print(f"Model changed to: {text}")
+                            is_options_popup_open = False  # Close options popup
+                            running_input = False  # Exit the input loop
+                            return  # Return to main game loop
+                    elif event.key == pygame.K_BACKSPACE:
+                        text = text[:-1]  # Handle backspace to delete characters
+                    elif event.key == pygame.K_ESCAPE:
+                        # Allow ESC to cancel input and return to game
+                        running_input = False
+                        return
+                    else:
+                        text += event.unicode  # Add typed character to text
+
+        # Render prompt text
+        prompt_text = font.render("Enter model name:", True, WHITE)
+        window.blit(prompt_text, (WINDOW_WIDTH // 2 - 150, WINDOW_HEIGHT // 2 - 60))
+
+        # Render the text and input box
+        txt_surface = font.render(text, True, color)
+        width = max(300, txt_surface.get_width() + 10)
+        input_box.w = width
+        window.blit(txt_surface, (input_box.x + 5, input_box.y + 5))
+        pygame.draw.rect(window, color, input_box, 2)  # Draw the input box border
+        
+        # Update the display
+        pygame.display.flip()
+        clock.tick(30)  # Set frame rate to 30 fps
 # --- MAIN LOOP ---
 running = True
 game_state = SPLASH
@@ -394,7 +556,7 @@ while running:
                             if name == "Close Menu":
                                 is_options_popup_open = False
                             elif name == "Switch Model":
-                                print("Action: Implement model switching logic")
+                                change_model()
                                 is_options_popup_open = False # Close after action (optional)
                             elif name == "Add Prop":
                                 print("Action: Implement prop adding logic")
