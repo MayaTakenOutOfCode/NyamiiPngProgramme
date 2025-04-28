@@ -26,12 +26,16 @@ pathToNyamiiModel = os.path.join(pathToModelDir, "nyamii")
 
 #Functions for keywords
 def make_neko():
+    change_model("neko")
     print("Making model a Neko!")
 def make_bald():
+    change_model("bald")
     print("Making model into bald model!")
 def make_evil():
+    change_model("evil")
     print("Making model a succubus!")
 def make_googly():
+    change_model("googly")
     print("Giving model googly eyes!")
 def make_bonk():
     print("Making model a bonk!")
@@ -40,8 +44,30 @@ def throw_cheese():
 def make_cool():
     print("Giving model cool sunglasses!")
 def make_human():
+    change_model("human")
     print("Making model human!")
 start_chat_listener("YOUR_VIDEO_ID") 
+check_keywords()
+if check_keywords().event_queue != []:
+    for event in check_keywords().event_queue:
+        author, keyword, action = event
+        print(f"Keyword '{keyword}' detected from {author}: {action}")
+        if keyword == "bald":
+            make_bald()
+        elif keyword == "neko":
+            make_neko()
+        elif keyword == "evil":
+            make_evil()
+        elif keyword == "googly":
+            make_googly()
+        # elif keyword == "bonk":
+        #     make_bonk()
+        # elif keyword == "cheese":
+        #     throw_cheese()
+        # elif keyword == "cool":
+        #     make_cool()
+        elif keyword == "human":
+            make_human()
 # --- CONSTANTS ---
 WINDOW_HEIGHT = 800
 WINDOW_WIDTH = 800
